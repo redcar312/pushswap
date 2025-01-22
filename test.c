@@ -247,20 +247,37 @@ void sa(struct s_list **stack_a)
 	write(1, "sa\n", 3);
 }
 
+int get_second_lowest(struct s_list **astack, int min)
+{
+    int second_lowest;
+    struct s_list *stack;
+    
+    stack = *astack;
+    second_lowest = stack->value + min;
+    stack = stack->next->next;
+    while(stack->next)
+    {
+                    
+            if(stack->value + min < second_lowest)
+                return(0);
+            stack = stack->next;
+    }
+    return (1);
+}
+
 int will_swap(struct s_list **stack, int min)
 {
 	struct s_list *head;
-	struct s_list *second_node;
 	  
-	int next_lowest;
+	int next_lowest = get_second_lowest(stack, min);
 	if (!*stack)
 		return (0);
 	head = *stack;
+	if(!head->next || head->next->value != min)
+	    return(0);
 	if (!head->next)
 		return (0);
-	second_node = head->next;
-	next_lowest = get_min(second_node);
-	if (head->value == next_lowest && second_node->value == min)
+	if (head->value == next_lowest)
 		return (1);
 	return (0);
 }
@@ -287,8 +304,8 @@ void	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_lengt
 		}
 		else if (get_head_val(stack_a) == max && get_last_node_val(stack_a) == min)
 			rra(stack_a);
-		else if (will_swap(stack_a, current_min))
-			sa(stack_a);
+		if(get_second_lowest(stack_a, current_min))
+		    sa(stack_a);
 	    else if (pos > (len / 2))
 			rra_and_pb(stack_a, stack_b, current_min);
 		else if (pos <= (len / 2))
@@ -339,4 +356,3 @@ int	main()
     int j = a ->value;
     printf("%d", j);
 }
-
