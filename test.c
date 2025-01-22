@@ -23,6 +23,89 @@ struct s_list
 #include <unistd.h>
 #include <stdlib.h>
 
+static int	calc_sum(char *str, int is_neg)
+{
+	size_t	i;
+	long long	sum;
+
+	i = 0;
+	sum = 0;
+	while (str[i] >= 48 && str[i] <= 57)
+	{
+		if (i > 0)
+			sum *= 10;
+		sum += (str[i] - 48);
+		i++;
+	}
+	if (is_neg)
+		sum *= -1
+	if(sum > 2147483647 || sum < -2147483647)
+		return (0);
+	return ((int)sum);
+}
+
+int	ft_atoi(char const *str)
+{
+	size_t	i;
+
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] == '-')
+			return (calc_sum((char *)&str[i + 1], 1));
+		if (str[i] == '+')
+			return (calc_sum((char *)&str[i + 1], 0));
+		if (str[i] == '\v' || str[i] == '\t' || str[i] == '\r' || str[i] == '\n'
+			|| str[i] == '\v' || str[i] == '\f' || str[i] == 32)
+			i++;
+		else
+			return (calc_sum((char *)&str[i], 0));
+	}
+	return (0);
+}
+int	check_for_dubs(struct s_list **stack, int new_value)
+{
+	int	i;
+	struct	s_list *current;
+	
+	if(!*stack)
+		return (1);
+	if(!current->next)
+		return (1);
+	while(current->next)
+	{
+		if(current->value == new_value)
+			return (0);
+		current = current->next;
+	}
+	return (1);
+}
+
+void	add_node(struct s_list *new_node, struct s_list **stack)
+{
+	struct s_list *current;
+		
+	current = *stack;
+	while (current->next)
+		current = current->next;
+	current->next = new_node;
+
+}
+
+struct s_list	*create_node(int value)
+{
+	struct s_list *new_node;
+	
+	new_node = (struct s_list *)malloc(sizeof(struct s_list));
+	if(!new_node)
+		return (NULL);
+	new_node->value = value;
+	return (new_node);
+}
+
+
+
+
 void	swap(struct s_list **stack)
 {
 	int	temp;
@@ -73,7 +156,7 @@ void	reverse_rotate_stack(struct s_list **stack)
 	head = *stack;
 	while (current->next->next != NULL)
 	    current = current->next;
-    last = current->next;
+	last = current->next;
 	last->next = head;
 	current->next = NULL;
 	*stack = last;
@@ -313,46 +396,30 @@ void	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_lengt
 	}
 }
 
-int	main()
+struct s_list *parse_args(char *args)
+{
+	struct s_list *stack;
+	char	*arg;
+	if(
+
+}
+
+int	main(int argc, char **argv)
 {
 	int	min;
 	int	max;
 	size_t	stack_len;
 	
-	struct s_list *a = (struct s_list *)malloc(sizeof(struct s_list));
-	struct s_list *aa = (struct s_list *)malloc(sizeof(struct s_list));
-	struct s_list *aaa = (struct s_list *)malloc(sizeof(struct s_list));
-	struct s_list *aaaa = (struct s_list *)malloc(sizeof(struct s_list));
-	struct s_list *aaaaa = (struct s_list *)malloc(sizeof(struct s_list));
-	struct s_list *aaaaaa = (struct s_list *)malloc(sizeof(struct s_list));
-	struct s_list *b = NULL;
-	
-	a->value = 2;
-	aa->value = 1;
-	aaa->value = 3;
-	aaaa->value = 7;
-	aaaaa->value = 8;
-	aaaaaa->value = 44;
-	
-	
-	a->next = aa;
-	aa->next = aaa;
-	aaa->next = aaaa;
-	aaaa->next = aaaaa;
-	aaaaa->next = aaaaaa;
+	if(argc != 2 || if !argv[1])
+	{
+		write(2, "Error\n", 6);
+		return(0); 
+	}
 	
 	max = get_max(&a);
 	min = get_min(&a);
 	stack_len = get_stack_len(&a);
 	solver(&a, &b, stack_len, min, max);
-  
-    while(a->next)
-    {
-        int i = a->value;
-        printf("%d \n", i);
-        a = a->next;
-        
-    }
-    int j = a ->value;
-    printf("%d", j);
+ 	
+ 	
 }
