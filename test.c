@@ -23,6 +23,25 @@ struct s_list
 #include <unistd.h>
 #include <stdlib.h>
 
+char	*create_single_arg(char *args)
+{
+	char	*arg;
+	size_t	i;
+	
+	while(args[i] != ' ' || args[i] != '\n')
+		i++;
+	arg = (char *)malloc((i + 1) * sizeof(char));
+	if(!arg)
+		return (NULL);
+	i = 0;
+	while(args[i] != ' ' || args[i] != '\n')
+	{
+		arg[i] = args[i];
+		i++;
+	}
+	return (arg);
+}
+
 static int	calc_sum(char *str, int is_neg)
 {
 	size_t	i;
@@ -57,12 +76,13 @@ int	ft_atoi(char const *str)
 			return (calc_sum((char *)&str[i + 1], 0));
 		if (str[i] == '\v' || str[i] == '\t' || str[i] == '\r' || str[i] == '\n'
 			|| str[i] == '\v' || str[i] == '\f' || str[i] == 32)
-			i++;
+			return (0);
 		else
 			return (calc_sum((char *)&str[i], 0));
 	}
 	return (0);
 }
+
 int	check_for_dubs(struct s_list **stack, int new_value)
 {
 	int	i;
@@ -92,19 +112,29 @@ void	add_node(struct s_list *new_node, struct s_list **stack)
 
 }
 
-struct s_list	*create_node(int value)
+struct s_list	*create_node(char *arg)
 {
 	struct s_list *new_node;
+	int	val;
 	
+	if (arg == "0")
+	{	
+		val = 0;
+		if (!check_for_dubs(val))
+			return (NULL);
+	}
+	else
+	{
+		val = ft_atoi(arg);
+		if (!val)
+			return (NULL);
+	}
 	new_node = (struct s_list *)malloc(sizeof(struct s_list));
-	if(!new_node)
+	if (!new_node)
 		return (NULL);
-	new_node->value = value;
+	new_node->value = val;
 	return (new_node);
 }
-
-
-
 
 void	swap(struct s_list **stack)
 {
@@ -200,7 +230,7 @@ int	check_if_sorted(struct s_list **stack)
 	struct	s_list *current;
 	int	min_value;
 	
-	if(!stack)
+	if (!stack)
 		return (0);
 	current = *stack;
 	min_value = current->value;	
@@ -309,7 +339,7 @@ void rra_and_pb(struct s_list **stack_a, struct s_list **stack_b, int min)
 
 void pusher(struct s_list **stack_a, struct s_list **stack_b)
 {
-	while(*stack_b)
+	while (*stack_b)
 		pa(stack_a, stack_b);
 }
 
@@ -338,10 +368,10 @@ int get_second_lowest(struct s_list **astack, int min)
     stack = *astack;
     second_lowest = stack->value + min;
     stack = stack->next->next;
-    while(stack->next)
+    while (stack->next)
     {
                     
-            if(stack->value + min < second_lowest)
+            if (stack->value + min < second_lowest)
                 return(0);
             stack = stack->next;
     }
@@ -356,8 +386,8 @@ int will_swap(struct s_list **stack, int min)
 	if (!*stack)
 		return (0);
 	head = *stack;
-	if(!head->next || head->next->value != min)
-	    return(0);
+	if (!head->next || head->next->value != min)
+		return (0);
 	if (!head->next)
 		return (0);
 	if (head->value == next_lowest)
@@ -387,21 +417,46 @@ void	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_lengt
 		}
 		else if (get_head_val(stack_a) == max && get_last_node_val(stack_a) == min)
 			rra(stack_a);
-		if(get_second_lowest(stack_a, current_min))
+		if (get_second_lowest(stack_a, current_min))
 		    sa(stack_a);
-	    else if (pos > (len / 2))
+	    	else if (pos > (len / 2))
 			rra_and_pb(stack_a, stack_b, current_min);
 		else if (pos <= (len / 2))
 			rotate_and_pb(stack_a, stack_b, current_min);
 	}
 }
 
-struct s_list *parse_args(char *args)
+struct s_list **create_arg_list(char *args, struct s_list **stack)
 {
-	struct s_list *stack;
+	struct s_list *node;
 	char	*arg;
-	if(
-
+	size_t	i;
+	int	val;
+	
+	i = 0;
+	while (args[i])
+	{
+		arg = make_single_arg(args);
+		if (!arg)
+		{
+			//free stack
+			return (NULL);
+		}
+		node = create_node(arg);
+		if (!node)
+		{
+			free(arg);
+			//free stack
+			return (NULL)
+		}
+		if (!*stack)
+			*stack = new_node;
+		else
+			add_node(new_node, stack);
+		free(new_node);
+		free(arg);			
+	}	
+	return (stack);
 }
 
 int	main(int argc, char **argv)
@@ -409,8 +464,9 @@ int	main(int argc, char **argv)
 	int	min;
 	int	max;
 	size_t	stack_len;
-	
-	if(argc != 2 || if !argv[1])
+	struct s_list	*stack_a;
+	struct s_list	stack_b;
+	if(argc != 2 || !argv[1])
 	{
 		write(2, "Error\n", 6);
 		return(0); 
