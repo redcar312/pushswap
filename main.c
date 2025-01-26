@@ -277,7 +277,7 @@ void	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_lengt
 	{
 		current_min = get_min(stack_a);
 		pos = get_min_pos(stack_a, current_min);
-		if (get_head_val(stack_a) == max && get_last_node_val(stack_a) == min)
+		if (get_head_val(stack_a) == max && get_last_node_val(stack_a) == min && get_stack_len(stack_a) == stack_len)
 			rra(stack_a);
 		else if (will_swap(stack_a, min))
 			sa(stack_a);
