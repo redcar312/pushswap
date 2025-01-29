@@ -469,7 +469,74 @@ int will_swap(struct s_list **stack, int min)
 	return (0);
 }
 
-int	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_length, int min, int max)
+size_t	find_pivot_index(struct s_list **stack, int pivot)
+{
+	struct s_list *current;
+	size_t	i;
+	
+	if (!*stack)
+		return (0);
+	current = *stack;
+	i = 1;
+	while (current->next)
+	{
+		if (current->value == pivot)
+			return (i);
+		i++;
+		current = current->next;
+	}
+	return (i);
+}
+
+ssize_t	find_pos(struct s_list **stack, size_t start_index, int pivot)
+{
+	int	i;
+	struct s_list	*current;
+	
+	if (*!stack)
+		return (0);
+	i = 1;
+	if (start_index != 1)
+	{
+		while (current->value != pivot)
+			current = current->next;
+	}
+	while (current->next)
+	{
+		if (current->value > pivot)
+			return (i);
+		i++;
+		current = current->next; 
+	}
+	return (i);
+}
+
+void	partition_stack(struct s_list **stack_a, struct s_list **stack_b, int pivot)
+{
+	int	i;
+	int	current_max;
+	int	pivot_index;
+	ssize_t	cheapest;
+	
+	i = 1;
+	while (pivot != get_max(stack_a) && i != -1)
+	{
+		
+	}
+}
+
+void	solver(struct s_list **stack_a, struct s_list **stack_b, int min, int max, size_t stack_len)
+{
+	int	pivot;
+
+	if (max < 0)
+		pivot = ((max * -1) - (min * -1)) * -1;
+	else
+		pivot = max - min;
+}
+
+
+/*int	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_length, int min, int max)
 {
 	int	current_min;
 	int	pos;
@@ -500,7 +567,7 @@ int	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_length
 	}
 	return (i);
 }
-
+*/
 size_t move_index(char *arg)
 {
 	size_t	i;
