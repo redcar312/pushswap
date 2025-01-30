@@ -372,15 +372,16 @@ int	pa(struct s_list **stack_a, struct s_list **stack_b)
 	return (write(1, "pa\n", 3));
 }
 
-int	rra_and_pb(struct s_list **stack_a, struct s_list **stack_b, int min)
+int	rra_and_pb(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
 {
 	int	i;
 	
-	while (get_head_val(stack_a) != min)
+	while (cheapest > 0)
 	{
 		i = rra(stack_a);
 		if (i == -1)
 			return (i);
+		cheapest--:
 	}	
 	i = pb(stack_a, stack_b);
 	return (i);
@@ -405,11 +406,11 @@ int	ra(struct s_list **stack_a)
 	    return (write(1, "ra\n", 3));
 }
 
-int	rotate_and_pb(struct s_list **stack_a, struct s_list **stack_b, int min)
+int	rotate_and_pb(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
 {
 	int	i;
 	
-	while (get_head_val(stack_a) != min)
+	while (cheapest)
 	{
 	    i = ra(stack_a);
 	    if (i == -1)
@@ -511,16 +512,37 @@ ssize_t	find_pos(struct s_list **stack, size_t start_index, int pivot)
 	return (i);
 }
 
+void	partitioner(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
+{
+	size_t current_len;
+	 
+	current_len = get_stack_len(stack_a);
+	if (cheapest >= (current_len / 2))
+	{
+		rra_and_pb(stack_a, stack_b, cheapest);
+	}
+	else
+	{
+		rotate_and_pb(stack_a, stack_b, cheapest);
+	}
+};
+
+
+
 void	partition_stack(struct s_list **stack_a, struct s_list **stack_b, int pivot)
 {
 	int	i;
-	int	current_max;
+	size_t	current_len;
 	int	pivot_index;
 	ssize_t	cheapest;
 	
 	i = 1;
 	while (pivot != get_max(stack_a) && i != -1)
 	{
+		if (find_pos(stack_a, pivot_index, pivot) < find_pos(stack_a))
+			cheapest = pivot_index + find_pos(stack_a, pivot_index, pivot);
+		else
+			cheapest = find_pos(stack_a, 1, pivot);
 		
 	}
 }
