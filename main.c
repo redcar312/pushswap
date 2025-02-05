@@ -1,12 +1,15 @@
-/******************************************************************************
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mhurtamo <mhurtamo@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/10 16:50:12 by mhurtamo          #+#    #+#             */
+/*   Updated: 2025/01/10 18:32:24 by mhurtamo         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-Welcome to GDB Online.
-  GDB online is an online compiler and debugger tool for C, C++, Python, PHP, Ruby, 
-  C#, OCaml, VB, Perl, Swift, Prolog, Javascript, Pascal, COBOL, HTML, CSS, JS
-  Code, Compile, Run and Debug online from anywhere in world.
-
-*******************************************************************************/
-#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -223,16 +226,11 @@ void	reverse_rotate_stack(struct s_list **stack)
 	struct s_list *current;
 	struct s_list *last;
 	struct s_list *head;
-	
-	if(!*stack)
-	    return ;
-	last = *stack;
 	current = *stack;
 	head = *stack;
-	while (last->next)
-	    last = last->next;
-	    
-    current = last--;
+	while (current->next->next != NULL)
+	    current = current->next;
+	last = current->next;
 	last->next = head;
 	current->next = NULL;
 	*stack = last;
@@ -258,15 +256,13 @@ int	get_max(struct s_list **stack)
 {
 	struct s_list *current;
 	int	max;
-    
-    if(!*stack)
-        return (0);
+
 	current = *stack;
 	max = current->value;
 	while (current->next)
 	{
-		if (current->next->value > max)
-			max = current->next->value;
+		if (current->value > max)
+			max = current->value;
 		current = current->next;
 	}
 	return (max);
@@ -315,8 +311,6 @@ size_t	get_stack_len(struct s_list **stack)
 	size_t	len;
 	struct s_list *current;
 	
-	if(!*stack)
-	    return (0);
 	current = *stack;
 	len = 1;
 	while (current->next)
@@ -346,16 +340,14 @@ int	get_head_val(struct s_list **stack)
 	return (head->value);
 }
 
-size_t	get_pos(struct s_list **stack, int val)
+size_t	get_min_pos(struct s_list **stack, int min)
 {
 	struct s_list *current;
 	size_t	pos;
 	
-	if(!*stack)
-	    return (0);
 	pos = 1;
 	current = *stack;
-	while (current->value != val)
+	while (current->value != min)
 	{
 		pos++;
 		current = current->next;
@@ -381,16 +373,16 @@ int	pa(struct s_list **stack_a, struct s_list **stack_b)
 	return (write(1, "pa\n", 3));
 }
 
-int	rra_and_pb(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
+int	rra_and_pb(struct s_list **stack_a, struct s_list **stack_b, int cheapest, int pivot_index)
 {
 	int	i;
 	
-	while (cheapest > 0)
+	while (cheapest > pivot_index)
 	{
 		i = rra(stack_a);
 		if (i == -1)
 			return (i);
-		cheapest--;
+		cheapest--:
 	}	
 	i = pb(stack_a, stack_b);
 	return (i);
@@ -435,7 +427,7 @@ int	sa(struct s_list **stack_a)
 	return (write(1, "sa\n", 3));
 }
 
-int	get_second_highest(struct s_list **astack, int max)
+int	get_second_lowest(struct s_list **astack, int min)
 {
 	int	second_lowest;
 	struct s_list	*stack;
@@ -443,25 +435,26 @@ int	get_second_highest(struct s_list **astack, int max)
 	if (!*astack)
 		return (0);
 	stack = *astack;
-	if (stack->value == max)
+	if (stack->value == min)
 	    return (0);
-	if(!stack->next || stack->next->value != max)
+	if(!stack->next || stack->next->value != min)
 	    return (0);
-	second_lowest = stack->value + max;
+	second_lowest = stack->value + min;
 	while (stack->next)
 	{
-	    if(stack->value == max)
+	    if(stack->value == min)
 	        stack = stack->next;
 	    else
 	    {
-		    if (stack->value + max > second_lowest)
+		    if (stack->value + min < second_lowest)
 			    return (0);
             stack = stack->next;
 	    }
 	}
 	return (1);
 }
-/*int will_swap(struct s_list **stack, int min)
+
+int will_swap(struct s_list **stack, int min)
 {
 	struct s_list *head;
 	  
@@ -477,7 +470,6 @@ int	get_second_highest(struct s_list **astack, int max)
 		return (1);
 	return (0);
 }
-*/
 
 size_t	find_pivot_index(struct s_list **stack, int pivot)
 {
@@ -497,23 +489,42 @@ size_t	find_pivot_index(struct s_list **stack, int pivot)
 	}
 	return (i);
 }
+int	calc_median(struct s_list **stack)
+{
+	long long	total;
+	long long	i;
+	struct s_list *current;
+	
+	total = 0;
+	if (!*stack)
+		return (0);
+	current = *stack;
+	i = 1;
+	while(current->next)
+	{
+		total += (long long)current->value;
+		i++;
+		current = current->next;
+	}
 
+	total /= i;
+}
 ssize_t	find_pos(struct s_list **stack, size_t start_index, int pivot)
 {
 	int	i;
 	struct s_list	*current;
 	
-	if (!*stack)
+	if (*!stack)
 		return (0);
 	i = 1;
 	if (start_index != 1)
 	{
-		while (current->value != pivot && current->next)
+		while (current->value != pivot)
 			current = current->next;
 	}
 	while (current->next)
 	{
-		if (current->value < pivot)
+		if (current->value > pivot)
 			return (i);
 		i++;
 		current = current->next; 
@@ -521,132 +532,85 @@ ssize_t	find_pos(struct s_list **stack, size_t start_index, int pivot)
 	return (i);
 }
 
-void	partitioner(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
+void	partitioner(struct s_list **stack_a, struct s_list **stack_b, int cheapest, int pivot_index)
 {
 	size_t current_len;
-	int	i;
 	 
 	current_len = get_stack_len(stack_a);
 	if (cheapest >= (current_len / 2))
-	{
-		i = rra_and_pb(stack_a, stack_b, cheapest);
-	}
+		rra_and_pb(stack_a, stack_b, cheapest, pivot_index);
 	else
-	{
-		i = rotate_and_pb(stack_a, stack_b, cheapest);
-	}
+		rotate_and_pb(stack_a, stack_b, cheapest);
 };
-
-void partition_stack(struct s_list **stack_a, struct s_list **stack_b, int pivot)
+size_t find_cheapest(struct s_list **stack, int pivot) 
 {
-	int	i;
-	size_t	current_len;
-	int	pivot_index;
-	ssize_t	cheapest;
-	struct s_list *head;
+	int i;
+	struct s_list	*current;
 	
-	i = 1;
-	current_len = get_stack_len(stack_a);
-	while (pivot != get_max(stack_a) || current_len > 2)
-	{
-		current_len = get_stack_len(stack_a);
-		if(current_len == 2)
-		    return ;
-		if (find_pos(stack_a, pivot_index, pivot) < find_pos(stack_a, 1, pivot))
-			cheapest = pivot_index + find_pos(stack_a, pivot_index, pivot);
-		else
-			cheapest = find_pos(stack_a, 1, pivot);
-		if(cheapest == 1)
-			i = pb(stack_a, stack_b);
-		else
-		    partitioner(stack_a, stack_b, cheapest);
-	}
-}
-
-int	calc_median(struct s_list **stack)
-{
-	long long	i;
-	long long	total;
-	struct	s_list *current;
-	
-	if (!*stack)
-		return (0);
-	current = *stack;
-	total = 0;
-	i = 1;
+	i = 0;
 	while (current->next)
 	{
-		total += (long long)current->value;
+		if(current->value <= pivot)
+			return(i);
 		i++;
 		current = current->next;
 	}
-	total += (long long)current->value;
-	total /= i;
-	return ((int)total);
+	return (i);
+};
+
+void b_solver(struct s_list **stack_a, struct s_list **stack_b)
+{
+	size_t current_len;
+
+};
+
+
+
+void	partition(struct s_list **stack_a, struct s_list **stack_b, int pivot)
+{
+		size_t cheap_start;
+		size_t	cheap_end;
+		size_t	len;
+
+		if(pivot < get_min(stack_a) || get_stack_len(stack_a) <= 2)
+			return ;
+		else
+		{
+			len = get_stack_len(stack_a);
+			cheap_start = find_cheapest(stack_a, pivot);
+			cheap_end = len - cheap_start;
+			if(find_cheapest(stack_a, pivot) == 0)
+				pb(stack_a);
+			else if(cheap_start <= cheap_end)
+				ra(stack_a);
+			else
+				rra(stack_a);
+			partition(stack_a, stack_b, pivot);
+		}
+
 }
 
-
-void	b_solver(struct s_list	**stack_a, struct s_list **stack_b)
+void	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_len, int pivot)
 {
-	int	current_max;
-	int	pos;
-	size_t	current_len;
-	struct	s_list	*head;
-	int	i;
-	while (*stack_b)
-	{
-		current_max = get_max(stack_b);
-		pos = get_pos(stack_b, current_max);
-		current_len = get_stack_len(stack_b);
-		head = *stack_b;
-		if (head->value == current_max)
-        {
-			i = pa(stack_a, stack_b);
-        }
-		else if (get_second_highest(stack_b, current_max))
-			i = sa(stack_b);
-		else if (pos <= (current_len / 2))
-			i = ra(stack_b);
-		else if(pos > (current_len / 2))
-			i = rra(stack_b);
-	}
-	
-}
+	int median;
 
-void doit(struct s_list **stack_a, struct s_list **stack_b, size_t stack_len)
-{
-	int	pivot;
-	
-	if (check_if_sorted(stack_a) && get_stack_len(stack_a) == stack_len)
+	median = 0;
+	if (get_stack_len(stack_a) < 2)
 		return ;
-	if(check_if_sorted(stack_a) && get_stack_len(stack_a) != stack_len)
-        b_solver(stack_a, stack_b);
-	if (get_stack_len(stack_a) == 2 && stack_len != 2)
+	if (get_stack_len(stack_a) > 2 && !check_if_sorted(stack_a))
 	{
-		if(!check_if_sorted(stack_a))
-			sa(stack_a);
+		if(pivot > get_min(stack_a))
+			median = calc_median(stack_a);
+		if(median == get_min(stack_a))
+			median++;
+		partition(stack_a, stack_b, pivot);
+		solver(stack_a, stack_b, stack_len, pivot);
+	}
+	else if(check_if_sorted(stack_a) && get_stack_len(stack_a) == 2)
+		sa(stack_a);
+	else
 		b_solver(stack_a, stack_b);
-	    return ;
-	}
-	if(get_stack_len(stack_a) > 2)
-	{	
-		pivot = calc_median(stack_a);
-		partition_stack(stack_a, stack_b, pivot);
-		doit(stack_a, stack_b, stack_len);
-	}
-	else 
-	    return ;
 }
-
-
-void	solver(struct s_list **stack_a, struct s_list **stack_b, int min, int max, size_t stack_len)
-{
-	int	pivot;
-	
-	
-}
-
-
 
 
 /*int	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_length, int min, int max)
@@ -750,5 +714,8 @@ int	main(int argc, char **argv)
 	max = get_max(&stack_a);
 	min = get_min(&stack_a);
 	stack_len = get_stack_len(&stack_a);
-	doit(&stack_a, &stack_b, stack_len);
+	if (solver(&stack_a, &stack_b, stack_len, min, max))
+        {
+           return (1);
+        }
 }
