@@ -22,6 +22,8 @@ struct s_list
 
 #include <unistd.h>
 #include <stdlib.h>
+void	b_solver(struct s_list	**stack_a, struct s_list **stack_b);
+size_t	find_cheapest(struct s_list **stack, size_t start_index, int pivot);
 
 void	free_stack(struct s_list **stack)
 {
@@ -280,7 +282,7 @@ int	check_if_sorted(struct s_list **stack)
 	struct	s_list *current;
 	int	min_value;
 	
-	if (!stack)
+	if (!*stack)
 		return (0);
 	current = *stack;
 	min_value = current->value;	
@@ -386,19 +388,19 @@ int	pa(struct s_list **stack_a, struct s_list **stack_b)
 	return (write(1, "pa\n", 3));
 }
 
-int	rra_and_pb(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
+void	rra_and_pb(struct s_list **stack_a, struct s_list **stack_b, int pivot)
 {
 	int	i;
+	size_t cheapest;
 	
-	while (cheapest > 0)
+	cheapest = find_cheapest(stack_a, 1, pivot);
+	while (cheapest > 1)
 	{
 		i = rra(stack_a);
-		if (i == -1)
-			return (i);
-		cheapest--;
+		cheapest = find_cheapest(stack_a, 1, pivot);
 	}	
 	i = pb(stack_a, stack_b);
-	return (i);
+
 }
 
 int	pusher(struct s_list **stack_a, struct s_list **stack_b)
@@ -420,15 +422,18 @@ int	ra(struct s_list **stack_a)
 	    return (write(1, "ra\n", 3));
 }
 
-int	rotate_and_pb(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
+int	rotate_and_pb(struct s_list **stack_a, struct s_list **stack_b, int pivot)
 {
 	int	i;
+	size_t	cheapest;
 	
-	while (cheapest)
+	cheapest = find_cheapest(stack_a, 1, pivot);
+	while (cheapest != 1)
 	{
 	    i = ra(stack_a);
 	    if (i == -1)
 	    	return (-1);
+	    cheapest = find_cheapest(stack_a, 1, pivot);
 	}
 	i = pb(stack_a, stack_b);
 	return (i);
@@ -523,22 +528,18 @@ size_t	find_pivot_index(struct s_list **stack, int pivot)
 	return (i);
 }
 
-ssize_t	find_pos(struct s_list **stack, int start_index, int pivot)
+size_t	find_cheapest(struct s_list **stack, size_t start_index, int pivot)
 {
-	int	i;
+	size_t	i;
 	struct s_list	*current;
 	
 	if (!*stack)
 		return (0);
-	if(start_index == 0)
-		start_index = 1;
 	i = 1;
 	current = *stack;
-	if (start_index != 1)
-	{
-		while (current->value != pivot)
-			current = current->next;
-	}
+	if (current->value < pivot)
+			return (i);
+	
 	while (current->next)
 	{
 		if (current->value < pivot)
@@ -549,51 +550,50 @@ ssize_t	find_pos(struct s_list **stack, int start_index, int pivot)
 	return (i);
 }
 
-void	partitioner(struct s_list **stack_a, struct s_list **stack_b, int cheapest)
+void	mover(struct s_list **stack_a, struct s_list **stack_b, size_t index, size_t last_index)
 {
-	size_t current_len;
+	size_t	len;
 	int	i;
-	 
-	current_len = get_stack_len(stack_a);
-	if (cheapest >= (current_len / 2))
-	{
-		i = rra_and_pb(stack_a, stack_b, cheapest);
-	}
-	else
-	{
-		i = rotate_and_pb(stack_a, stack_b, cheapest);
-	}
-};
 
-void partition_stack(struct s_list **stack_a, struct s_list **stack_b, int pivot)
+	len = get_stack_len(stack_a);
+	len -= last_index;
+	if(index != 1 && last_index < index)
+		i = rra(stack_a);
+	else if(index != 1 && index < last_index)
+		i = ra(stack_a);
+	else
+		pb(stack_a, stack_b);
+}
+
+void	partition(struct s_list	**stack_a, struct s_list **stack_b, int pivot)
 {
-	int	i;
-	size_t	current_len;
-	ssize_t	pivot_index;
-	ssize_t	cheapest;
-	struct s_list *head;
+	size_t	i;
+	size_t	last_index;
+	size_t	j;
+	struct s_list	*current;
 	
+	current = *stack_a;
 	i = 1;
-	current_len = get_stack_len(stack_a);
-	while (current_len > 2)
+	last_index= 0;
+	j = 0;
+	while (current->next)
 	{
-		current_len = get_stack_len(stack_a);
-		if(current_len == 2)
-		    return ;
-		pivot_index = get_pos(stack_a, pivot);
-		if(pivot_index == -1)
-			return ;
-		if (find_pos(stack_a, pivot_index, pivot) < find_pos(stack_a, 1, pivot))
-			cheapest = pivot_index + find_pos(stack_a, pivot_index, pivot);
-		else
-			cheapest = find_pos(stack_a, 1, pivot);
-		if(cheapest == 1)
-			i = pb(stack_a, stack_b);
-		else
-		    partitioner(stack_a, stack_b, cheapest);
-		if (pivot == get_max(stack_a))
-			return ;
+		if(current->value <= pivot)
+			break ;
+		i++;
+		current = current->next;
 	}
+	current = *stack_a;
+	while (current->next)
+	{
+		if(current->value <= pivot)
+			last_index = j;
+		j++;
+		current = current->next;	
+	}
+	if (current->value <= pivot)
+		last_index = j;
+	mover(stack_a, stack_b, i, last_index);
 }
 
 int	calc_median(struct s_list **stack)
@@ -618,6 +618,8 @@ int	calc_median(struct s_list **stack)
 	return ((int)total);
 }
 
+
+
 void	b_solver(struct s_list	**stack_a, struct s_list **stack_b)
 {
 	int	current_max;
@@ -625,58 +627,42 @@ void	b_solver(struct s_list	**stack_a, struct s_list **stack_b)
 	size_t	current_len;
 	struct	s_list	*head;
 	int	i;
-	while (*stack_b)
+	if(get_stack_len(stack_b) > 0)
 	{
-		current_max = get_max(stack_b);
-		pos = get_pos(stack_b, current_max);
-		current_len = get_stack_len(stack_b);
-		head = *stack_b;
-		if (head->value == current_max)
-			i = pa(stack_a, stack_b);
-		else if (get_second_highest(stack_b, current_max))
-			i = sa(stack_b);
-		else if (pos <= (current_len / 2))
-			i = ra(stack_b);
-		else if(pos > (current_len / 2))
-			i = rra(stack_b);
-	}	
+		pa(stack_a, stack_b);
+		b_solver(stack_a, stack_b);
+	}
+	
 }
 
-void doit(struct s_list **stack_a, struct s_list **stack_b, size_t stack_len)
+int	solver(struct s_list **stack_a, struct s_list **stack_b, int pivot)
 {
-	int	pivot;
-	int	i;
+	struct	s_list *current;
+	int	median;
+	size_t	cheap_index;
+	size_t	current_len;
 	
-	if (check_if_sorted(stack_a) && get_stack_len(stack_a) == stack_len)
-		return ;
-	if(check_if_sorted(stack_a) && get_stack_len(stack_a) != stack_len)
-        	b_solver(stack_a, stack_b);
-	if (get_stack_len(stack_a) == 2)
+	if(get_stack_len(stack_a) > 2)
 	{
-		if(!check_if_sorted(stack_a))
-			sa(stack_a);
-		b_solver(stack_a, stack_b);
-	    return ;
-	}
-	if (get_stack_len(stack_a) > 2)
-	{	
-		i = (int)get_stack_len(stack_a);
-		i = (i / 2) + 1;
-		pivot = get_node_val(stack_a, i);
-		partition_stack(stack_a, stack_b, pivot);
-		doit(stack_a, stack_b, stack_len);
+		printf("%d \n", pivot);
+		cheap_index = find_cheapest(stack_a, 1, pivot);
+		current_len = get_stack_len(stack_a);
+		current = *stack_a;
+		if (current->value < pivot)
+			pb(stack_a, stack_b);
+		else if(cheap_index >= (current_len / 2))
+			ra(stack_a);
+		else
+			rra(stack_a);
+		return(1);
 	}
 	else
-	    sa(stack_a);
+	{
+		b_solver(stack_a, stack_b);
+		return (0);
+	}
 }
 
-
-void	solver(struct s_list **stack_a, struct s_list **stack_b, int min, int max, size_t stack_len)
-{
-	int	pivot;
-	
-	
-}
 
 /*int	solver(struct s_list **stack_a, struct s_list **stack_b, size_t stack_length, int min, int max)
 {
@@ -778,7 +764,20 @@ int	main(int argc, char **argv)
 	}
 	max = get_max(&stack_a);
 	min = get_min(&stack_a);
+	int median = calc_median(&stack_a);
+	int is_sorted = check_if_sorted(&stack_a);
 	stack_len = get_stack_len(&stack_a);
-	doit(&stack_a, &stack_b, stack_len);
+	int i = 1;
+	while(i)
+	{
+		if(median <= get_min(&stack_a))
+		{
+			median = calc_median(&stack_a);
+			while(median <= get_min(&stack_a))
+				median++;
+		}
+		i = solver(&stack_a, &stack_b, median);
+	}
+	
 	return (1);
 }
