@@ -446,7 +446,7 @@ int	get_second_lowest(struct s_list **astack, int min)
 	        stack = stack->next;
 	    else
 	    {
-		    if (stack->value + min < second_lowest)
+		    if (stack->value + min > second_lowest)
 			    return (0);
             stack = stack->next;
 	    }
@@ -558,9 +558,47 @@ size_t find_cheapest(struct s_list **stack, int pivot)
 	return (i);
 };
 
+size_t	get_node_index(struct s_list **stack, int val)
+
+	size_t	i;
+	struct s_list	*current;
+
+	if(!*stack)
+		return (0);
+	current = *stack;
+	i = 1;
+	while(current->next)
+	{
+		if(current->value == val)
+			return (i);
+		i++;
+		current = current->next;
+	}
+	return (i);
+}
+
 void b_solver(struct s_list **stack_a, struct s_list **stack_b)
 {
 	size_t current_len;
+	int current_max;
+	size_t pos;
+	struct	s_list	*current;
+	int i;
+	current = *stack_b;
+	while (current->next)
+	{
+		current_max = get_max(stack_b);
+		current_len = get_stack_len(current);
+		pos = get_node_index(stack_b, current_max);
+		if (current->value == current_max(stack_b))
+			pa(stack_a, stack_b);
+		else if(get_second_lowest(stack_b))
+			sa(stack_b);
+		else if(pos >= (current_len / 2))
+			rra(stack_b);
+		else
+			ra(stack_b);
+	}
 
 };
 
