@@ -556,14 +556,11 @@ int	handle_a(struct s_list **a, struct s_list *target)
 	int	i;
 	
 	i = 1;
-	if (target->is_above_median)
+	while(*a != target && i != -1)
 	{
-		while(*a != target && i != -1)
-			i = rra(a);			
-	}
-	else
-	{
-		while(*a != target && i != -1)
+		if(target->is_above_median)
+			i = rra(a);
+		else
 			i = ra(a);
 	}
 	return (i);
@@ -574,15 +571,12 @@ int	handle_b(struct s_list **a, struct s_list *target)
 	int	i;
 	
 	i = 1;
-	if (target->is_above_median)
+	while (*a != target && i != -1)
 	{
-		while(*a != target && i != -1)
-			i = rrb(a);			
-	}
-	else
-	{
-		while(*a != target && i != -1)
-			i = rb(a);
+		if (target->is_above_median)
+			i = rra(a);
+		else
+			i = ra(a);
 	}
 	return (i);
 }
